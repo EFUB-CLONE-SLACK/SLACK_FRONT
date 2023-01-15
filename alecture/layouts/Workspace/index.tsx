@@ -139,7 +139,7 @@ const Workspace: VFC = () => {
           'http://fake-slack.shop/workspaces',
           {
             name: newWorkspace,
-            profileIdList: newUrl.split(','),
+            profileIdList: newUrl.replace(' ', '').split(','),
           },
           {
             withCredentials: true,

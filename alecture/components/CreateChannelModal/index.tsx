@@ -38,7 +38,7 @@ const CreateChannelModal: VFC<Props> = ({ show, onCloseModal, setShowCreateChann
           {
             name: newChannel,
             type: 'DM',
-            teammate: channelEmail.split(','),
+            teammate: channelEmail.replace(' ', '').split(','),
           },
           {
             withCredentials: true,
