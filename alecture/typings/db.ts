@@ -52,3 +52,11 @@ export interface IWorkspace {
   url: string; // 주소 창에 보이는 주소
   OwnerId: number; // workspace 만든 사람 아이디
 }
+
+export interface IMember {
+  id: string;
+  nickname: string;
+  email: string;
+  memberId: string;
+  workspaceId: string;
+}
