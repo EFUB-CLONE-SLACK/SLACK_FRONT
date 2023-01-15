@@ -1,12 +1,13 @@
 import EachDM from '@components/EachDM';
 import useSocket from '@hooks/useSocket';
 import { CollapseButton } from '@components/DMList/styles';
-import { IDM, IUser, IUserWithOnline } from '@typings/db';
+import { IDM, IMember, IUser, IUserWithOnline } from '@typings/db';
 import fetcher from '@utils/fetcher';
 import React, { FC, useCallback, useEffect, useState } from 'react';
 import { useParams } from 'react-router';
 import { NavLink } from 'react-router-dom';
 import useSWR from 'swr';
+import axios from 'axios';
 
 const DMList = () => {
   const { workspace } = useParams<{ workspace?: string }>();
@@ -20,7 +21,7 @@ const DMList = () => {
   const [socket] = useSocket(workspace);
   const [channelCollapse, setChannelCollapse] = useState(false);
   const [onlineList, setOnlineList] = useState<number[]>([]);
-
+  const [memberList, setMemberList] = useState<IMember[]>([]);
   const toggleChannelCollapse = useCallback(() => {
     setChannelCollapse((prev) => !prev);
   }, []);
@@ -28,6 +29,7 @@ const DMList = () => {
   useEffect(() => {
     console.log('DMList: workspace 바꼈다', workspace);
     setOnlineList([]);
+    onGetMemberData();
   }, [workspace]);
 
   //옵셔널 체이닝 연산자(?.) 객체의 값이 없을 때 에러를 발생시키지 않고 undefined를 반환
@@ -42,19 +44,24 @@ const DMList = () => {
     };
   }, [socket]);
 
+  const onGetMemberData = useCallback(() => {
+    axios.get('http://fake-slack.shop/profiles').then((res) => {
+      setMemberList(res?.data);
+    });
+  }, []);
+
   return (
     <>
       <h2>
         <CollapseButton collapse={channelCollapse} onClick={toggleChannelCollapse}>
-          <p>Ⅴ</p>
+          {!channelCollapse ? <p>{`>`}</p> : <p>Ⅴ</p>}
         </CollapseButton>
         <span>Direct Messages</span>
       </h2>
       <div>
         {!channelCollapse &&
-          memberData?.map((member) => {
-            const isOnline = onlineList.includes(member.id);
-            return <EachDM key={member.id} member={member} isOnline={isOnline} />;
+          memberList?.map((member) => {
+            return <EachDM key={member.id} member={member} isOnline={false} />;
           })}
       </div>
     </>

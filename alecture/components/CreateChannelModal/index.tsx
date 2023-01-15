@@ -17,6 +17,7 @@ interface Props {
 
 const CreateChannelModal: VFC<Props> = ({ show, onCloseModal, setShowCreateChannelModal }) => {
   const [newChannel, onChangeNewChannel, setNewChannel] = useInput('');
+  const [channelEmail, onChangeChannelEmail, setChannelEmail] = useInput('');
   //객체 데이터 타입<{}>
   const { workspace, channel } = useParams<{ workspace: string; channel: string }>();
   const { data: userData, error } = useSWR<IUser | false>('/api/users', fetcher, {
@@ -33,9 +34,11 @@ const CreateChannelModal: VFC<Props> = ({ show, onCloseModal, setShowCreateChann
       e.preventDefault();
       axios
         .post(
-          `http://localhost:3095/api/workspaces/${workspace}/channels`,
+          `http://fake-slack.shop/workspaces/${workspace}/chatroom`,
           {
             name: newChannel,
+            type: 'DM',
+            teammate: channelEmail.split(','),
           },
           {
             withCredentials: true,
@@ -45,6 +48,7 @@ const CreateChannelModal: VFC<Props> = ({ show, onCloseModal, setShowCreateChann
           setShowCreateChannelModal(false);
           revalidateChannel();
           setNewChannel('');
+          setChannelEmail('');
         })
         .catch((error) => {
           console.dir(error);
@@ -60,6 +64,15 @@ const CreateChannelModal: VFC<Props> = ({ show, onCloseModal, setShowCreateChann
         <Label id="channel-label">
           <span>채널</span>
           <Input id="channel" value={newChannel} onChange={onChangeNewChannel} />
+        </Label>
+        <Label id="channel-label">
+          <span>이메일로 추가하기</span>
+          <Input
+            id="channel"
+            value={channelEmail}
+            onChange={onChangeChannelEmail}
+            placeholder="예:slack@gmail.com, clone@gmail.com"
+          />
         </Label>
         <Button type="submit">생성하기</Button>
       </form>

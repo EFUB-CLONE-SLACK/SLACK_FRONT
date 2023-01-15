@@ -46,7 +46,7 @@ const Workspace: VFC = () => {
   const [showInviteChannelModal, setShowInviteChannelModal] = useState(false);
   const [showWorkspaceModal, setShowWorkspaceModal] = useState(false);
   const [showCreateChannelModal, setShowCreateChannelModal] = useState(false);
-  const [showWorkspaceData, setWorkspaceData] = useState([]);
+  const [showWorkspaceData, setWorkspaceData] = useState<any[]>([]);
   const [newWorkspace, onChangeNewWorkspace, setNewWorkpsace] = useInput('');
   const [newUrl, onChangeNewUrl, setNewUrl] = useInput('');
   const { workspace } = useParams<{ workspace: string }>();
@@ -76,6 +76,10 @@ const Workspace: VFC = () => {
   const { data: memberData } = useSWR<IUser[]>(userData ? `/api/workspaces/${workspace}/members` : null, fetcher);
   const [socket, disconnect] = useSocket(workspace);
 
+  useEffect(() => {
+    onGetWorkspaceData();
+  }, []);
+
   //'login'이란 이벤트 이름으로 서버에 뒷내용을 보내라.
 
   /*useEffect(() => {
@@ -92,6 +96,7 @@ const Workspace: VFC = () => {
     };
   }, [workspace, disconnect]);
 */
+
   const onGetWorkspaceData = useCallback(() => {
     axios.get('http://fake-slack.shop/workspaces').then((res) => {
       console.log(res.data);
@@ -131,10 +136,10 @@ const Workspace: VFC = () => {
       if (!newUrl || !newUrl.trim()) return;
       axios
         .post(
-          '/api/workspaces',
+          'http://fake-slack.shop/workspaces',
           {
-            workspace: newWorkspace,
-            url: newUrl,
+            name: newWorkspace,
+            profileIdList: newUrl.split(','),
           },
           {
             withCredentials: true,
@@ -184,7 +189,6 @@ const Workspace: VFC = () => {
       <Header>
         <RightMenu>
           <span onClick={onClickUserProfile}>
-            <h2 onClick={onGetWorkspaceData}>클릭미</h2>
             <ProfileImg src={gravatar.url(userData?.email!, { s: '28px', d: 'retro' })} alt={userData?.name!} />
             {showUserMenu && (
               <Menu style={{ right: 0, top: 38 }} show={showUserMenu} onCloseModal={onCloseUserProfile}>
@@ -207,7 +211,7 @@ const Workspace: VFC = () => {
           {showWorkspaceData?.map((wsd) => {
             return (
               <Link key={wsd.id} to={`/workspace/${123}/channel/normal`}>
-                <WorkspaceButton>{wsd.id.slice(0, 1).toUpperCase()}</WorkspaceButton>
+                <WorkspaceButton>{wsd.name?.slice(0, 1).toUpperCase()}</WorkspaceButton>
               </Link>
             );
           })}
@@ -243,8 +247,13 @@ const Workspace: VFC = () => {
             <Input id="workspace" value={newWorkspace} onChange={onChangeNewWorkspace} />
           </Label>
           <Label id="workspace-url-label">
-            <span>워크스페이스 url</span>
-            <Input id="workspace" value={newUrl} onChange={onChangeNewUrl} />
+            <span>이메일로 팀원 추가</span>
+            <Input
+              id="workspace"
+              value={newUrl}
+              onChange={onChangeNewUrl}
+              placeholder="예:slack@gmail.com, clone@gmail.com"
+            />
           </Label>
           <Button type="submit">생성하기</Button>
         </form>
